@@ -44,8 +44,11 @@ def filter_data(df, mapper, cols2keep):
 
     # add metadata information
     df['seqid'] = df['seqName'].apply(lambda x: x.split('|')[0])
+    df = df[df['seqid'].isin(mapper)]
     df['date'] = df['seqid'].apply(lambda x: mapper[x]['Collection date'])
     df['date'] = df['date'].apply(lambda x: pd.to_datetime(x) if len(x.split('-')) == 3 else '')
+
+    df = df[df['date'] != '']
     df['submission_date'] = df['seqid'].apply(lambda x: pd.to_datetime(mapper[x]['Submission date']))
 
     # filter out inappropriate dates
@@ -64,30 +67,26 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
-    parser.add_argument('--files', type=str, required=True, help="nextclade input files")
+    parser.add_argument('--file', type=str, required=True, help="nextclade input file")
     parser.add_argument('--metadata-mapper', type=str, required=True, help="metadata pickle mapper")
-    parser.add_argument('--variant', type=str, required=True, help="Nextclade variant")
     parser.add_argument('--out', type=str, default='./', help="output folder path")
 
     args = parser.parse_args()
 
-    files = glob.glob(f'{args.files}/*tsv')
     with open(args.metadata_mapper, 'rb') as o:
         mapper = pickle.load(o)
-    v = variants[args.variant]
-
-    res = []
-    for f in files:
-        d = pd.read_table(f)
-        d = filter_data(d, mapper, cols2keep)
+   
+    d = pd.read_table(args.file)
+    d = filter_data(d, mapper, cols2keep)
+    for v in variants:
         if ',' in v:
             mask = np.any([d.variant==y for y in v.split(',')], axis=0)
         else:
             mask = d.variant==v
 
-        res.append(d[mask])
-    variant_df = pd.concat(res)
-    variant_df.to_csv(os.path.join(args.out, f'{args.variant}.tsv'), index=False)
+        variant_df = d[mask]
+        out_dir = os.path.join(args.out, v)
+        variant_df.to_pickle(os.path.join(out_dir, f'{os.path.basename(args.file).split(".")[0]}_{v}.pkl'))
 
 
 
