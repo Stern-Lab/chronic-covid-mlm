@@ -93,10 +93,10 @@ class Clade:
 
         self.data = data
 
-    def fit_OLS(self, by=('num_aa_from_ref')):
+    def fit_OLS(self, by=['num_aa_from_ref']):
         data = self.data
         x = data['datenum']
-        y = data[list(by)].sum(axis=1)
+        y = data[by].sum(axis=1)
 
         model = sm.OLS(y, sm.add_constant(x))
         results = model.fit()
