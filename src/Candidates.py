@@ -15,14 +15,14 @@ import matplotlib.pyplot as plt
 from matplotlib import pyplot
 
 class KnownCandidates:
-    def __init__(self, clade, mutation_to_consider=('num_aa_from_ref')):
+    def __init__(self, clade, mutation_to_consider=['num_aa_from_ref']):
         self.clade_data = clade
         self.mutation_to_consider = mutation_to_consider
 
         self.candidates_data = None
 
     def get_stats(self, pvalue_thresh=0.01):
-        def fit_candidate_OLS(self, data):
+        def fit_candidate_OLS(data):
             x = data['datenum']
             y = data[list(self.mutation_to_consider)].sum(axis=1)
             model = sm.OLS(y, sm.add_constant(x))
@@ -43,7 +43,7 @@ class KnownCandidates:
 
     def summarize(self):
         clade_data = self.clade_data
-        data = [clade_data.clade, clade_data.n, clade_data.extrems.shape[0],clade_data.candidates.shape[0]]
+        data = [(clade_data.clade, clade_data.n, clade_data.extremes.shape[0],clade_data.candidates.shape[0])]
         columns = ['variant', 'num_sequences', 'num_extreme_sequence', 'num_candidates']
         df = pd.DataFrame(data, columns=columns)
         df.to_csv(os.path.join(clade_data.out, 'summary.csv'), index=False)
@@ -53,7 +53,8 @@ class KnownCandidates:
 
     def plot_manhattan(self, pvalue_thresh=0.01):
         candidates = self.candidates_data
-
+        if candidates['is_significant'].nunique() == 1:
+            return
         sns.set_context('poster')
         f, ax = plt.subplots(figsize=(12, 5))
         sns.scatterplot(x=candidates.index, y='minus_log_f_pvalue', hue='is_significant', data=candidates,
