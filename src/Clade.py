@@ -11,7 +11,7 @@ import statsmodels.api as sm
 from datetime import datetime as dt
 
 class Clade:
-    def __init__(self, clade_path, ref_path, clade, min_seqs=6, out='./'):
+    def __init__(self, clade_path, ref_path, clade, min_seqs=2, out='./'):
         self.clade = clade
         self.min_seqs = min_seqs
         self.out = out
@@ -85,6 +85,7 @@ class Clade:
         data['num_nuc_from_ref'] = data['nuc_from_ref'].map(len)
         data['num_aa_from_ref'] = data['aa_from_ref'].map(len)
         data['num_syn_from_ref'] = data['num_nuc_from_ref'] - data['num_aa_from_ref']
+        data['num_spike_mutations_from_ref'] = data['aa_from_ref'].apply(lambda x: len([mt for mt in x if 'S:' in mt]))
 
         data['num_deletions'] = data['deletions'].apply(lambda x: len(x.split(',')) if ',' in x else 0)
         data['num_insertions'] = data['insertions'].apply(lambda x: len(x.split(',')) if ',' in x else 0)
@@ -122,14 +123,30 @@ class Clade:
 
     def set_known_candidates(self):
         extremes = self.extremes
+        data = self.data
+
+        # group by known attributes and filter sequences with less than min_seqs with extreme mutations
         grouped = extremes.groupby(['location', 'age', 'gender']).agg({'seqid': list}).reset_index()
         grouped['size'] = grouped['seqid'].map(len)
-
         grouped = grouped[(grouped['age'] != 'Unknown') & (grouped['gender'] != 'Unknown')]\
             .sort_values(by='size', ascending=False).reset_index(drop=True)
+        grouped = grouped[grouped['size'] >= self.min_seqs]
+        grouped['candidate_id'] = grouped.index
 
-        candidates = grouped[grouped['size'] > np.quantile(grouped['size'], 0.95)] # filter by 95Q
-        candidates['reg_data'] = candidates['seqid'].apply(lambda x: extremes[extremes['seqid'].isin(x)])
+        # get the original data to add sequences with the same known attrs, but with smaller number of mutations
+        data = data[data['location'].isin(grouped['location'].unique())].fillna('') # reduce number of
+                                                                                    # samples before manipulations
+        data['age'] = data.apply(lambda x: self.get_age(x), axis=1)
+        data['gender'] = data.apply(lambda x: self.get_gender(x), axis=1)
+
+        # filter data by ID
+        data['filter_id'] = data.apply(lambda row: f'{row["location"]};{row["age"]};{row["gender"]}', axis=1)
+        grouped['filter_id'] = grouped.apply(lambda row: f'{row["location"]};{row["age"]};{row["gender"]}', axis=1)
+
+        # get full candidates
+        mapper = dict(grouped[['filter_id', 'candidate_id']].values)
+        candidates = data[data['filter_id'].isin(grouped['filter_id'])]
+        candidates['candidate_id'] = candidates['filter_id'].apply(lambda x: mapper[x])
 
         self.candidates = candidates
 
