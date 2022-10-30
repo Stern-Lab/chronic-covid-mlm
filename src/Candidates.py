@@ -2,6 +2,8 @@ import os
 import itertools
 import math
 import matplotlib
+import sys
+
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
@@ -13,7 +15,8 @@ import statsmodels.api as sm
 import statsmodels.stats.multitest as multi
 import matplotlib.pyplot as plt
 
-from utils import get_longest_path_per_component, create_mutational_graph
+sys.path.append('/sternadi/home/volume3/chronic-corona-pred/repos/chronic-covid-pred/')
+from src.utils import get_longest_path_per_component, create_mutational_graph
 
 from matplotlib import pyplot
 
@@ -46,7 +49,7 @@ class KnownCandidates:
 
         # generate candidate specific regressions
         reg_dict = candidates.groupby(['candidate_id']).apply(
-            lambda grp: fit_candidate_OLS(grp, y_labels=['num_nuc_from_ref', 'num_deletions', 'num_insertions']))
+            lambda grp: fit_candidate_OLS(grp, y_labels=['num_aa_from_ref', 'num_deletions', 'num_insertions']))
         reg_dict_spike = candidates.groupby(['candidate_id']).apply(
             lambda grp: fit_candidate_OLS(grp, y_labels=['num_spike_mutations_from_ref']))
 
@@ -81,6 +84,9 @@ class KnownCandidates:
         data = self.candidates_data
         data = data[(data['is_significant'] == True) & (data['slope'] > 0)]
 
+        if data.shape[0] == 0:
+            return
+
         res = []
         for candidate_id in data['candidate_id'].unique():
             candidate = data[data['candidate_id'] == candidate_id]
@@ -111,10 +117,18 @@ class KnownCandidates:
 
     def summarize(self):
         clade_data = self.clade_data
-        data = [(clade_data.clade, clade_data.n, clade_data.extremes.shape[0],clade_data.candidates.shape[0])]
-        columns = ['variant', 'num_sequences', 'num_extreme_sequence', 'num_candidates']
+        if self.potential_chronic is None:
+            n_chronic = 0
+        else:
+            n_chronic = self.potential_chronic.shape[0]
+        data = [(clade_data.clade, clade_data.n, clade_data.extremes.shape[0],clade_data.candidates.shape[0], n_chronic)]
+        columns = ['variant', 'num_sequences', 'num_extreme_sequence', 'num_known_candidates', 'potential_chronic']
         df = pd.DataFrame(data, columns=columns)
         df.to_csv(os.path.join(clade_data.out, 'summary.csv'), index=False)
 
     def save_candidate_data(self):
+        if self.potential_chronic is not None:
+            self.potential_chronic.to_csv(os.path.join(self.clade_data.out, 'potential_chronic.csv'), index=False)
+            self.potential_chronic.to_pickle(os.path.join(self.clade_data.out, 'potential_chronic.pkl'))
+        self.candidates_data.to_csv(os.path.join(self.clade_data.out, 'candidates.csv'), index=False)
         self.candidates_data.to_pickle(os.path.join(self.clade_data.out, 'candidates.pkl'))
