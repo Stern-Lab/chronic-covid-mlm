@@ -15,18 +15,21 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument('-i', '--ids', type=str, required=True, help="the file containing the ids to search")
-parser.add_argument('-o', '--output-dir', type=str, defualt='./', help="the file containing the ids to search")
+parser.add_argument('-o', '--output-dir', type=str, default='./', help="the file containing the ids to search")
 args = parser.parse_args()
 
+print('==== Loading sequences from file ====')
 ids_txt = args.ids
 ids_name = os.path.basename(ids_txt).replace('.txt', '')
 with open(ids_txt, 'r') as o:
     sequences = o.readlines()
 
+print('Done.\nLoading indexed fasta database')
 JSON_PATH = '/sternadi/home/volume3/chronic-corona-pred/data/GISAID/sequence_mapper.json'
 with open(JSON_PATH) as o:
     mapper = json.load(o)
 
+print('Done loading database.\n launching jobs to queue') 
 tmp_dir = os.path.join(args.output_dir, f'tmp_{ids_name}')
 os.makedirs(tmp_dir, exist_ok=True)
 
@@ -40,5 +43,5 @@ cmds_wrap = f"cat {tmp_dir}/*.fasta > {os.path.join(args.output_dir, f'{ids_name
 
 job_id = script_runner(cmds_seqkit, queue='adistzachi', alias='seqkit')
 _ = script_runner(cmds_wrap, queue='adistzachi', alias='seqkit_warp', run_after_job=job_id)
-
+print('All jobs submitted')
 
