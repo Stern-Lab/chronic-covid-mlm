@@ -8,7 +8,7 @@ def create_mutational_graph(candidate, max_reversions=3, max_days=30, add_weight
     # create node mapping
     n = candidate.shape[0]
     seq2aa = candidate.sort_values(by='date').reset_index(drop=True)[
-        ['seqid', 'date', 'datenum', 'aa_from_ref', 'num_aa_from_ref']].to_dict(orient='index')
+        ['seqid', 'date', 'datenum', 'aa_from_ref', 'num_aa_from_ref', 'nuc']].to_dict(orient='index')
     all_pairs = list(itertools.combinations(range(n), 2))
     nodes = [(i, {'label': (seq2aa[i]['date'], seq2aa[i]['seqid']), 'pos': (seq2aa[i]['datenum'], seq2aa[i]['num_aa_from_ref'])}) for i in seq2aa]
 
