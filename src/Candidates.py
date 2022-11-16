@@ -1,5 +1,5 @@
 import os
-import itertools
+import pickle
 import math
 import matplotlib
 import sys
@@ -21,10 +21,13 @@ from src.utils import get_longest_path_per_component, create_mutational_graph
 from matplotlib import pyplot
 
 class KnownCandidates:
-    def __init__(self, clade, mutation_to_consider=['num_aa_from_ref'], chronic_thresh='20 days'):
+    def __init__(self, clade, mut_path, mutation_to_consider=['num_aa_from_ref'], chronic_thresh='20 days'):
         self.clade_data = clade
         self.mutation_to_consider = mutation_to_consider
         self.chronic_thresh = chronic_thresh
+
+        with open(mut_path, 'rb') as o:
+            self.mut_path = pickle.load(o)
 
         self.candidates_data = None
         self.potential_chronic = None
@@ -81,6 +84,7 @@ class KnownCandidates:
 
 
     def extract_potential_chronic(self):
+        mutational_path = self.mut_path
         data = self.candidates_data
         data = data[(data['is_significant'] == True) & (data['slope'] > 0)]
 
@@ -90,6 +94,10 @@ class KnownCandidates:
         res = []
         for candidate_id in data['candidate_id'].unique():
             candidate = data[data['candidate_id'] == candidate_id]
+            candidate['mutational_path'] = candidate['seqid'].apply(
+                lambda x: set(mutational_path[x.split('/', 1)[-1]]) if x.split('/', 1)[-1] in mutational_path else 'no-report')
+            candidate = candidate[candidate['mutational_path'] != 'no-report']
+            # create the graph per candidate
             G = create_mutational_graph(candidate)
             paths = get_longest_path_per_component(G, time_interval=self.chronic_thresh)
             paths['candidate_id'] = candidate_id
