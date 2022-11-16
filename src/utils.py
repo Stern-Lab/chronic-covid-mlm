@@ -3,36 +3,37 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 
+def flatten(l):
+    return [item for sublist in l for item in sublist]
 
-def create_mutational_graph(candidate, max_reversions=3, max_days=30, add_weights=False):
+def create_mutational_graph(candidate, max_reversions=4, max_branches=3, max_days=30):
     # create node mapping
     n = candidate.shape[0]
     seq2aa = candidate.sort_values(by='date').reset_index(drop=True)[
-        ['seqid', 'date', 'datenum', 'aa_from_ref', 'num_aa_from_ref', 'nuc']].to_dict(orient='index')
+        ['seqid', 'date', 'datenum', 'num_aa_from_ref', 'mutational_path']].to_dict(orient='index')
     all_pairs = list(itertools.combinations(range(n), 2))
-    nodes = [(i, {'label': (seq2aa[i]['date'], seq2aa[i]['seqid']), 'pos': (seq2aa[i]['datenum'], seq2aa[i]['num_aa_from_ref'])}) for i in seq2aa]
+    nodes = [(i, {'label': (seq2aa[i]['date'], seq2aa[i]['seqid']),
+                  'pos': (seq2aa[i]['datenum'], seq2aa[i]['num_aa_from_ref'])}) for i in seq2aa]
 
     # build the DAG
     G = nx.DiGraph()
     reversions = np.zeros((n, n))
-    counts = np.zeros((n, n))
+    branches = np.zeros((n, n))
     deltas = np.zeros((n, n))
     for i, j in all_pairs:
-        inter = seq2aa[i]['aa_from_ref'].intersection(seq2aa[j]['aa_from_ref'])
-        reversions[i, j] = len(seq2aa[i]['aa_from_ref'] - seq2aa[j]['aa_from_ref'])
-        counts[i, j] = len(seq2aa[j]['aa_from_ref'] - inter)
+        diff = seq2aa[i]['mutational_path'] - seq2aa[j]['mutational_path']
+        branches[i, j] = len(diff)
+        reversions[i, j] = len(flatten([x.split(':')[-1].split(',') for x in diff]))
         deltas[i, j] = (seq2aa[j]['date'] - seq2aa[i]['date']).days
-
 
     G.add_nodes_from(nodes)
 
     for i, j in all_pairs:
         not_same_date = G.nodes[i]['label'][0] != G.nodes[j]['label'][0]
-        if reversions[i, j] <= max_reversions and deltas[i, j] <= max_days and not_same_date:
-            if add_weights:
-                G.add_edge(i, j, label=seq2aa[j]['date'] - seq2aa[i]['date'], weight=counts[i,j])
-            else:
-                G.add_edge(i, j, label=seq2aa[j]['date'] - seq2aa[i]['date'])
+        if reversions[i, j] <= max_reversions and branches[i, j] <= max_branches and deltas[
+            i, j] <= max_days and not_same_date:
+            G.add_edge(i, j, label=seq2aa[j]['date'] - seq2aa[i]['date'])
+
     return G
 
 def get_time_interval_from_component(G, component_nodes):
