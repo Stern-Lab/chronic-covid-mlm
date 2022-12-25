@@ -24,7 +24,7 @@ c.filter_extremes()
 c.save_extremes()
 c.set_known_candidates()
 
-known = KnownCandidates(clade=c, mutation_to_consider=['num_aa_from_ref', 'num_insertions', 'num_deletions'])
+known = KnownCandidates(clade=c,mut_path='/sternadi/home/volume3/chronic-corona-pred/data/GISAID/sample_path_mapper.pkl', mutation_to_consider=['num_aa_from_ref', 'num_insertions', 'num_deletions'])
 known.get_stats()
 known.extract_potential_chronic()
 known.summarize()
