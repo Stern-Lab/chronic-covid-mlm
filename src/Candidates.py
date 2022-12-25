@@ -49,6 +49,7 @@ class KnownCandidates:
             return results.f_pvalue, results.params['datenum'], n, data['date'].nunique()/n
 
         candidates = self.clade_data.candidates
+        mutational_path = self.mut_path
 
         # generate candidate specific regressions
         reg_dict = candidates.groupby(['candidate_id']).apply(
@@ -79,12 +80,12 @@ class KnownCandidates:
         candidates['unique_dates_ratio'] = candidates['candidate_id'].apply(lambda x: reg_dict[x][3])
 
         candidates = self.get_candidate_time_interval(candidates)
+        candidates['mutational_path'] = candidates['seqid'].apply(lambda x: set(mutational_path[''.join(x.split('/', 1)[-1].split())]) if ''.join(x.split('/', 1)[-1].split()) in mutational_path else 'no-report')
 
         self.candidates_data = candidates
 
 
     def extract_potential_chronic(self):
-        mutational_path = self.mut_path
         data = self.candidates_data
         data = data[(data['is_significant'] == True) & (data['slope'] > 0)]
 
@@ -94,9 +95,9 @@ class KnownCandidates:
         res = []
         for candidate_id in data['candidate_id'].unique():
             candidate = data[data['candidate_id'] == candidate_id]
-            candidate['mutational_path'] = candidate['seqid'].apply(
-                lambda x: set(mutational_path[x.split('/', 1)[-1]]) if x.split('/', 1)[-1] in mutational_path else 'no-report')
             candidate = candidate[candidate['mutational_path'] != 'no-report']
+            if candidate.shape[0] == 0:
+                continue
             # create the graph per candidate
             G = create_mutational_graph(candidate)
             paths = get_longest_path_per_component(G, time_interval=self.chronic_thresh)
