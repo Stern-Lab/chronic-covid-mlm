@@ -14,13 +14,13 @@ def collate_batch(batch):
         text.append(_text)
         masked.append(_masked)
         lengths.append(len(_text))
-
+    print(len(text), len(masked), len(lengths))
     order = np.argsort(lengths)[::-1] # sort in descending order for batching
 
     # now sort text and masked before padding
-    text = np.array(text)[order]
-    masked = np.array(masked)[order]
-    lengths = np.array(lengths)[order]
+    text = np.array(text).reshape(len(text),1)[order]
+    masked = np.array(masked).reshape(len(masked),1)[order]
+    lengths = np.array(lengths).reshape(len(lengths),1)[order]
 
     text_pad = pad_sequence(text, batch_first=True)
     masked_pad = pad_sequence(masked, batch_first=True)
