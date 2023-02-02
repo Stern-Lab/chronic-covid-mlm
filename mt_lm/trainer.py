@@ -115,9 +115,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('Training SARS-CoV-2 mutational word embedding')
 
     # training dataset
-    parser.add_argument('--dataset', default='/Users/daniellemiller/Library/CloudStorage/'
-                                             'GoogleDrive-danimillers10@gmail.com/Shared drives/Lab.Danielle/Projects/'
-                                             'chronic-covid-pred/sars_cov_2_mlm/data/',
+    parser.add_argument('--dataset', default='/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/data/',
                         help='path to a directory with .txt training dataset')
     # embedding model architecture
     parser.add_argument('model', nargs='?', help='pretrained model (optional)')
@@ -131,7 +129,7 @@ if __name__ == '__main__':
     parser.add_argument('--save-interval', type=int, default=100000, help='number of step between data saving')
 
     parser.add_argument('-p', type=float, default=0.1, help='masking rate')
-    parser.add_argument('--batch-size', type=int, default=64, help='minibatch size')
+    parser.add_argument('--batch-size', type=int, default=100, help='minibatch size')
 
     parser.add_argument('--weight-decay', type=float, default=0, help='L2 regularization (default: 0)')
     parser.add_argument('--lr', type=float, default=0.0001, help='learning rate (default: 1e-4)')
