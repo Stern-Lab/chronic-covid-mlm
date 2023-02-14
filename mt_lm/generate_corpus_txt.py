@@ -47,7 +47,7 @@ for clade in clades:
     # tokenize sentences by sorting the mutation according to the appearance order on the genome
     # this includes both coding\non coding, indels and syn\non-syn mutations
     sentences = df['mt'].apply(lambda l: sorted(l, key=functools.cmp_to_key(comp))).values
-    sentences = '. '.join([' '.join(s) for s in sentences])
+    sentences = '\n'.join([' '.join(s) for s in sentences])
 
     with open(f'/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/data/{clade}_part.txt', 'w') as fp:
         fp.write(sentences)
