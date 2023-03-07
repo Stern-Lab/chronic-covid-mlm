@@ -2,30 +2,35 @@ import glob
 import itertools
 import torch
 import numpy as np
+import pickle
+import os
 
 from torchtext.vocab import build_vocab_from_iterator
 from collections import Counter
 
 
+
 class MutationalCorpus:
     def __init__(self, dataset, debug, n):
 
-        fs = glob.glob(f'{dataset}/*.txt')
         sentences = []
-        for f in fs:
-            with open(f, 'r') as o:
-                s = o.read().split('. ')
-                text = [m.split() for m in s if len(m.split()) >= n]
-                sentences.extend(text)
-            if debug:
-                if len(sentences) >= 10000:
-                    sentences = sentences[:10000]
-                    break
+        with open(dataset, 'r') as o:
+            for line in o:
+                text = line.split()
+                if len(text) >= n:
+                    sentences.append(text)
+        if debug:
+            if len(sentences) >= 10000:
+                sentences = sentences[:10000]
 
         vocab = build_vocab_from_iterator(sentences, min_freq=10, specials=["<unk>"])
         vocab.set_default_index(vocab["<unk>"])
 
-        self.vocab = vocab
+        # save vocab for encoding
+        with open(f'{dataset.replace(".txt", "_vocab.pkl")}', 'wb') as fp:
+            pickle.dump(vocab, fp)
+
+
         self.x = [torch.from_numpy(np.asarray(vocab(s))) for s in sentences]
 
         v = [vocab(s) for s in sentences]
