@@ -34,7 +34,7 @@ tmp_dir = os.path.join(args.output_dir, f'tmp_{ids_name}')
 os.makedirs(tmp_dir, exist_ok=True)
 
 files = [os.path.join('/sternadi/home/volume3/chronic-corona-pred/data/GISAID/fasta_parts/',mapper[seq.strip()]) for
-         seq in sequences]
+         seq in sequences if seq.strip() in mapper]
 
 cmds_seqkit = '\n'.join([f"/sternadi/home/volume3/chronic-corona-pred/software/seqkit grep -f "
                   f"{ids_txt} {f} > {os.path.join(tmp_dir, os.path.basename(f).replace('.txt', ''))}" for f in files])
