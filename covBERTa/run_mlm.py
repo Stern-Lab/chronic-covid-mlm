@@ -109,7 +109,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', type=float, default=0.2, help='masking rate')
     parser.add_argument('--tags', default='mlm', help='tags for comet-ml experiment')
 
-    parser.add_argument('--ncpu', type=int, default=10, help='masking rate')
+    parser.add_argument('--ncpu', type=int, default=10, help='number of cpus')
 
     parser.add_argument('--debug', action='store_true')
 
