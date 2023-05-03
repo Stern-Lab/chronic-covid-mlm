@@ -1,5 +1,7 @@
 from __future__ import print_function,division
 
+import os
+
 import torch
 import torch.nn as nn
 from torch.nn.utils.rnn import PackedSequence
@@ -45,7 +47,7 @@ class SkipLSTM(nn.Module):
 
     def transform(self, x):
         one_hot = self.to_one_hot(x)
-        hs =  [one_hot] # []
+        hs =  [one_hot]
         h_ = one_hot
         for f in self.layers:
             h,_ = f(h_)
@@ -78,3 +80,11 @@ class SkipLSTM(nn.Module):
             z = z.view(x.size(0), x.size(1), -1)
 
         return z
+
+    @staticmethod
+    def load_pretrained(path):
+        _, nin, nout, hidden, layers, _ = os.path.basename(path).split('_')
+        model = SkipLSTM(nin, nout, hidden, layers)
+        state_dict = torch.load(path, map_location=torch.device('cpu'))
+        model.load_state_dict(state_dict)
+        return model
