@@ -37,11 +37,11 @@ files = [os.path.join('/sternadi/home/volume3/chronic-corona-pred/data/GISAID/fa
          seq in sequences if seq.strip() in mapper]
 
 cmds_seqkit = '\n'.join([f"/sternadi/home/volume3/chronic-corona-pred/software/seqkit grep -f "
-                  f"{ids_txt} {f} > {os.path.join(tmp_dir, os.path.basename(f).replace('.txt', ''))}" for f in files])
+                  f"{ids_txt} {f} --by-name > {os.path.join(tmp_dir, os.path.basename(f).replace('.txt', ''))}" for f in files])
 
 cmds_wrap = f"cat {tmp_dir}/*.fasta > {os.path.join(args.output_dir, f'{ids_name}')}.fasta\nrm -r {tmp_dir}/"
 
-job_id = script_runner(cmds_seqkit, queue='adistzachi', alias='seqkit')
-_ = script_runner(cmds_wrap, queue='adistzachi', alias='seqkit_warp', run_after_job=job_id)
+job_id = script_runner(cmds_seqkit, queue='dudulight', alias='seqkit')
+_ = script_runner(cmds_wrap, queue='dudulight', alias='seqkit_warp', run_after_job=job_id)
 print('All jobs submitted')
 
