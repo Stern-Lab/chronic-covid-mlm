@@ -60,5 +60,20 @@ def get_longest_path_per_component(G, time_interval='20 days'):
                                                                'component_seqids', 'longest_path_seqids', 'len_longest_path']]
     return filtered
 
+def bootstrap(data, s, n):
+    x = np.random.choice(data, (s,n))
+    return np.mean(x, axis=1)
 
+def cohen_d(x, y):
+    nx = len(x)
+    ny = len(y)
+    dof = nx + ny - 2
+    mean1 = np.mean(x)
+    mean2 = np.mean(y)
+    var1 = np.var(x)
+    var2 = np.var(y)
+    pooled_var = (nx * var1 + ny * var2) / dof
+    pooled_stddev = np.sqrt(pooled_var)
+    d = (mean1 - mean2) / pooled_stddev
+    return d
 
