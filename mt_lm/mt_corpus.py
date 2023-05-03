@@ -17,7 +17,7 @@ class MutationalCorpus:
         with open(dataset, 'r') as o:
             for line in o:
                 text = line.split()
-                if len(text) >= n:
+                if  n <= len(text) < 160:
                     sentences.append(text)
         if debug:
             if len(sentences) >= 10000:
