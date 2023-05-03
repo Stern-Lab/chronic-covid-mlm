@@ -71,6 +71,8 @@ def divide_list(strings_list):
     return result
 
 
+by_gene = False
+by_genome = True
 
 gene_corpus = {'ORF1a':[], 'ORF1b':[], 'S':[], 'OTHER':[]}
 
@@ -93,21 +95,24 @@ for clade in clades:
     df['mt'] = df.apply(
         lambda row: [e for e in row['aa'] + row['syn_nuc'] + row['deletions'] + row['insertions'] if e != ''],
         axis=1)
-    df['mt_by_gene'] = df['mt'].apply(lambda l: divide_list(l))
 
-    # tokenize sentences by sorting the mutation according to the appearance order on the genome
-    for k in gene_corpus:
-        sentences = [sorted(x[k], key=functools.cmp_to_key(comp)) for x in df['mt_by_gene'].values if x[k]!= []]
-        sentences = '\n'.join([' '.join(s) for s in sentences]) + '\n'  # add new line at the end for concatenation
-        gene_corpus[k] += sentences
-
-        with open(f'/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/gene_corpus/{k}_c_{clade}.txt', 'w') as fp:
+    if by_genome:
+        sentences = df['mt'].apply(lambda lst: sorted(lst, key=functools.cmp_to_key(comp))).values
+        sentences = '\n'.join([' '.join(s) for s in sentences])
+        with open(f'/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/gene_corpus/ALL_c_{clade}.txt',
+                  'w') as fp:
             fp.write(sentences)
 
+    if by_gene:
+        df['mt_by_gene'] = df['mt'].apply(lambda l: divide_list(l))
 
-# save results to txt files
-for k in gene_corpus:
-    with open(f'/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/gene_corpus/{k}.txt', 'w') as fp:
-        fp.write(gene_corpus[k][0])
+        # tokenize sentences by sorting the mutation according to the appearance order on the genome
+        for k in gene_corpus:
+            sentences = [sorted(x[k], key=functools.cmp_to_key(comp)) for x in df['mt_by_gene'].values if x[k]!= []]
+            sentences = '\n'.join([' '.join(s) for s in sentences]) + '\n'  # add new line at the end for concatenation
+            gene_corpus[k] += sentences
+
+            with open(f'/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/gene_corpus/{k}_c_{clade}.txt', 'w') as fp:
+                fp.write(sentences)
 
 
