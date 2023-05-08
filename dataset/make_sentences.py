@@ -28,16 +28,14 @@ def remove_ld(text, clade, mapper):
             aa_pos = int(pos[1:-1])
             r = {gene_start + aa_pos * 3 - 1, gene_start + aa_pos * 3 - 2,
                      gene_start + aa_pos * 3 - 3}
-            if len(r.intersection(mapper[clade]['del'])) == 0:
+            if (len(r.intersection(mapper[clade]['del'])) == 0) and (mt not in mapper[clade]['aa']):
                 mts.append(mt)
         # nuc mutation
         elif ':' not in mt:
             r = {int(mt[1:-1])}
-            if len(r.intersection(mapper[clade]['del'])) == 0:
+            if (len(r.intersection(mapper[clade]['del'])) == 0) and (mt not in mapper[clade]['nuc']):
                 mts.append(mt)
-        # all insertions are valie
-        elif (mt not in mapper[clade]['nuc']) and (mt not in mapper[clade]['aa']):
-            mts.append(mt)
+        # all insertions are valid
         else:
             print(mt)
     return ' '.join(mts)
