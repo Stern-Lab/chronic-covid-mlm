@@ -84,7 +84,7 @@ def main(args):
     experiment.log_parameters(parameters)
 
     # configure model output path
-    model_path = os.path.join(args.model_path, f'fold_{args.fold}')
+    model_path = os.path.join(args.model_path, f'{args.fold}')
     os.makedirs(model_path, exist_ok=True)
 
 
@@ -92,12 +92,8 @@ def main(args):
     model = BertForSequenceClassification.from_pretrained(args.model)
     # Freeze the lower layers - do not want to overfit....
     for name, param in model.named_parameters():
-        if name.startswith('bert.encoder'):
+        if name.startswith('bert.encoder') or name.startswith('bert.embeddings'):
             param.requires_grad = False
-
-
-    # Create an optimizer and only pass the parameters of the classification head to it
-    optimizer = AdamW(model.classifier.parameters(), lr=5e-5, no_deprecation_warning=True)
 
 
     training_args = TrainingArguments(
@@ -105,7 +101,7 @@ def main(args):
         evaluation_strategy="steps",
         overwrite_output_dir=True,
         num_train_epochs=args.epoches,
-        per_device_train_batch_size=10,
+        per_device_train_batch_size=6,
         per_device_eval_batch_size=64,
         logging_steps=args.logging_interval,
         save_steps=args.save_interval,
@@ -131,27 +127,22 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser('Training SARS-CoV-2 mutational classifier')
 
     # training dataset - '../'
-    parser.add_argument('--dataset', default='/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/classifier/train_test',
+    parser.add_argument('--dataset', default='/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/classifier/lovocv',
                         help='path to a directory with .txt train and test dataset')
     parser.add_argument('--model', default='/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/models/pretrained-covBERTa/checkpoint-29000/',
                         help='path to a directory with .txt train and test dataset')
-    parser.add_argument('--fold', default=0, type=int,
-                        help='fold number')
+    parser.add_argument('--fold', default='omicron', type=str, help='fold name')
     parser.add_argument('--model-path', default='/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/classifier/models/',
                         help='path to a directory to save model outputs')
 
     parser.add_argument('--tags', default='classify', help='tags for comet-ml experiment')
-
     parser.add_argument('--ncpu', type=int, default=10, help='number of cpus')
-
     parser.add_argument('--debug', action='store_true')
 
-
-
-    # training parameters - 1000000
-    parser.add_argument('-e', '--epoches', type=int, default=20, help='number of data epoches')
-    parser.add_argument('--save-interval', type=int, default=50, help='number of step between data saving')
-    parser.add_argument('--logging-interval', type=int, default=100, help='number of step between data logginh')
+    # training parameters
+    parser.add_argument('-e', '--epoches', type=int, default=25, help='number of data epoches')
+    parser.add_argument('--save-interval', type=int, default=30, help='number of step between data saving')
+    parser.add_argument('--logging-interval', type=int, default=10, help='number of step between data logginh')
 
 
     args = parser.parse_args()
