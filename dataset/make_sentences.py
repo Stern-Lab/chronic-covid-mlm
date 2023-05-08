@@ -8,17 +8,38 @@ import numpy as np
 from extract_mutations_by_epi import GENEMAP, comp, flatten
 
 # helper function
+def has_numbers(string):
+    return any(char.isdigit() for char in string)
+
 def remove_ld(text, clade, mapper):
     mts = []
     for mt in text.split():
-        # if we have a deletion
+        # check if there is an intersection for del positions
+        # deletion
         if '-' in mt or mt.isdigit():
             s, e = int(mt.split('-')[0]), int(mt.split('-')[-1])
             r = {x for x in range(s, e+1)}
             if len(r.intersection(mapper[clade]['del'])) == 0:
                 mts.append(mt)
-        elif mt not in mapper[clade]['nuc'] and mt not in mapper[clade]['aa']:
+        # aa mutation
+        elif ':' in mt and has_numbers(mt.split(':')[-1]):
+            aa, pos = mt.split(':')
+            gene_start = GENEMAP[aa][0]
+            aa_pos = int(pos[1:-1])
+            r = {gene_start + aa_pos * 3 - 1, gene_start + aa_pos * 3 - 2,
+                     gene_start + aa_pos * 3 - 3}
+            if len(r.intersection(mapper[clade]['del'])) == 0:
+                mts.append(mt)
+        # nuc mutation
+        elif ':' not in mt:
+            r = {int(mt[1:-1])}
+            if len(r.intersection(mapper[clade]['del'])) == 0:
+                mts.append(mt)
+        # all insertions are valie
+        elif (mt not in mapper[clade]['nuc']) and (mt not in mapper[clade]['aa']):
             mts.append(mt)
+        else:
+            print(mt)
     return ' '.join(mts)
 
 
