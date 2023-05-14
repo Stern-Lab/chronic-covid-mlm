@@ -45,5 +45,6 @@ for grp in groups:
         res[node] = clade
 
     data['clade'] = data['id'].apply(lambda x: res[x])
+    data = data[data['clade'] != 'recombinant']
     data.to_csv(f'/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/classifier/data/{grp}.csv', index=False)
 
