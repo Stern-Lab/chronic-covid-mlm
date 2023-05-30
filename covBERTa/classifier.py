@@ -67,7 +67,7 @@ def main(args):
         files_map['train'], files_map['test'] = files_map['train'][:10], files_map['test'][:4]
 
     dataset = load_dataset("csv", data_files=files_map,
-                           cache_dir='/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/HF_DATASETS_CACHE')
+                           cache_dir='/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/HF_DATASETS_CACHE_CLS')
 
     # tokenizing train & test dataset
     ncpus = args.ncpu
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     parser.add_argument('--debug', action='store_true')
 
     # training parameters
-    parser.add_argument('-e', '--epoches', type=int, default=25, help='number of data epoches')
+    parser.add_argument('-e', '--epoches', type=int, default=30, help='number of data epoches')
     parser.add_argument('--save-interval', type=int, default=30, help='number of step between data saving')
     parser.add_argument('--logging-interval', type=int, default=10, help='number of step between data logginh')
 
