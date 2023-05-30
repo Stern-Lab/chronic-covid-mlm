@@ -9,7 +9,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 import re
-from dataset.extract_mutations_by_epi import GENEMAP
+GENEMAP = {'ORF1a':(266,13468), 'ORF3a':(25393,26220), 'ORF9b':(28284,28577),'ORF1b':(13468,21555),
+           'N':(28274,29533), 'S':(21563,25384), 'E':(26245,26472), 'ORF8':(27894,28259), 'M':(26523,27191),
+           'ORF7a':(27394,27759), 'ORF7b':(27756,27887), 'ORF6':(27202,27387)}
 
 def get_gene(x):
     if ":" in x:
@@ -28,9 +30,9 @@ def load_data(fold, clade=''):
     explain['exp_score'] = explain.apply(lambda x: -1 * x['exp_score'] if x['label'] == 0 else x['exp_score'], axis=1)
 
     remove_case = np.load(f'/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/classifier/models/'
-                          f'{fold}/explainability/{clade}exclude_case.npy')
+                          f'{fold}/explainability/exclude_case.npy')
     remove_control = np.load(f'/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/classifier/models/'
-                             f'{fold}/explainability/{clade}exclude_control.npy')
+                             f'{fold}/explainability/exclude_control.npy')
 
     exp = explain[((explain['label'] == 1) & (~explain['mt'].isin(remove_case))) |
                   ((explain['label'] == 0) & (~explain['mt'].isin(remove_control)))]
@@ -76,7 +78,7 @@ def plot_gene_bars(df, fold, clade=''):
     grp = grp[grp['gene'] != 'non-coding']
     order = ['ORF1a', 'ORF1b', 'S', 'ORF3a', 'E', 'M', 'ORF6', 'ORF7a', 'ORF7b', 'ORF8', 'N', 'ORF9b']
     with sns.plotting_context("talk"):
-        sns.catplot(x='gene', y='score', data=grp[grp['type'] != 'del'], row='type',
+        sns.catplot(x='gene', y='n_samples', data=grp[grp['type'] != 'del'], row='type',
                     hue='label', kind='bar', aspect=5, height=2, palette=['#375E79', '#FB6542'], order=order)
         plt.tight_layout()
         plt.savefig(f'/sternadi/home/volume3/chronic-corona-pred/sars_cov_2_mlm/classifier/models/'
@@ -84,15 +86,12 @@ def plot_gene_bars(df, fold, clade=''):
         plt.close()
 
 def main():
-    print("Here")
     folds = ['alpha', 'delta','omicron']
     for fold in folds:
-        if fold == 'omicron':
-            for clade in ['BA1_', 'BA2_']:
-                print(clade)
-                exp = load_data(fold, clade=clade)
-                plot_scatter(exp, fold, clade=clade)
-                plot_gene_bars(exp, fold, clade=clade)
+        print(fold)
+        exp = load_data(fold)
+        plot_scatter(exp, fold)
+        plot_gene_bars(exp, fold)
 
 if __name__ == "__main__":
     main()
