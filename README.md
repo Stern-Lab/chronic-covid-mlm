@@ -34,8 +34,9 @@ conda activate chronic-mlm
 The setup was tested on Python 3.10.
 Versions of all required programs appear in `environment.yml`.
 
-#### Loading the model
-Upon acceptance, the model will be uploaded to the Hugging Face Hub :hugs:, and the instructions for usage will be updated here.</br>
+## Loading the model
+#### Pre-train MLM
+:round_pushpin:Upon acceptance, the model will be uploaded to the Hugging Face Hub :hugs:, and the instructions for usage will be updated here.</br>
 Meanwhile, you may load the model using the data checkpoints provided.
 
 ```
@@ -53,6 +54,7 @@ model = BertModel.from_pretrained('data/Supplementary Dataset 6/pretrained-covBE
                                   output_hidden_states = True)
 ```
 
+#### Per variant classifier
 For loading the classification models use the same tokenizer but load the latest checkpoint to `BertForSequenceClassification`:
 ```
 model = BertModel.from_pretrained('data/Supplementary Dataset 6/classifier/omicron/checkpoint-180/',
