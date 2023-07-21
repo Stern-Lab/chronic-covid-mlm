@@ -34,4 +34,30 @@ conda activate chronic-mlm
 The setup was tested on Python 3.10.
 Versions of all required programs appear in `environment.yml`.
 
-Upon acceptance, the model will be uploaded to the Hugging Face Hub :hugs:, and the instructions for usage will be updated here
+#### Loading the model
+Upon acceptance, the model will be uploaded to the Hugging Face Hub :hugs:, and the instructions for usage will be updated here.</br>
+Meanwhile, you may load the model using the data checkpoints provided.
+
+```
+from transformers import BertTokenizer, BertModel, BertForSequenceClassification
+
+class CustomTokenizer(BertTokenizer):
+    def _tokenize(self, text):
+        text = text.replace(':', 'X').replace('-','X')
+        tokens = text.split()
+        return tokens
+
+tokenizer = CustomTokenizer.from_pretrained('data/Supplementary Dataset 6/models/pretrained-covBERTa/',
+                                             do_lower_case=False)
+model = BertModel.from_pretrained('data/Supplementary Dataset 6/pretrained-covBERTa/checkpoint-29000/',
+                                  output_hidden_states = True)
+```
+
+For loading the classification models use the same tokenizer but load the latest checkpoint to `BertForSequenceClassification`:
+```
+model = BertModel.from_pretrained('data/Supplementary Dataset 6/classifier/omicron/checkpoint-180/',
+                                  output_hidden_states = True)
+```
+
+
+
