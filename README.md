@@ -4,6 +4,7 @@
 This repository contains the code supporting the paper
 **Using big sequencing data to identify chronic SARS-Coronavirus-2 infections**
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10338988.svg)](https://doi.org/10.5281/zenodo.10338988)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10339154.svg)](https://doi.org/10.5281/zenodo.10339154)
 
 ## Getting the data
