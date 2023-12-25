@@ -4,7 +4,7 @@
 This repository contains the code supporting the paper
 **Using big sequencing data to identify chronic SARS-Coronavirus-2 infections**
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10338988.svg)](https://doi.org/10.5281/zenodo.10338988)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10430415.svg)](https://doi.org/10.5281/zenodo.10430415)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10339154.svg)](https://doi.org/10.5281/zenodo.10339154)
 
 ## Getting the data
@@ -19,7 +19,7 @@ Start by downloading the data files from the Zenodo database.
 mkdir data
 cd data
 
-wget https://zenodo.org/record/XXXXXXX/files/data.tar.gz?download=1
+wget https://zenodo.org/record/10430415/files/Supplemetary_Dataset_6.tar.gz?download=1
 tar -zxvf data.tar.gz
 rm data.tar.gz
 ```
@@ -51,16 +51,16 @@ class CustomTokenizer(BertTokenizer):
         tokens = text.split()
         return tokens
 
-tokenizer = CustomTokenizer.from_pretrained('data/Supplementary Dataset 6/models/pretrained-covBERTa/',
+tokenizer = CustomTokenizer.from_pretrained('Supplemetary_Dataset_6/models/pretrained-covBERTa/',
                                              do_lower_case=False)
-model = BertModel.from_pretrained('data/Supplementary Dataset 6/pretrained-covBERTa/checkpoint-29000/',
+model = BertModel.from_pretrained('Supplemetary_Dataset_6/pretrained-covBERTa/checkpoint-29000/',
                                   output_hidden_states = True)
 ```
 
 #### Per variant classifier
 For loading the classification models use the same tokenizer but load the latest checkpoint to `BertForSequenceClassification`:
 ```
-model = BertModel.from_pretrained('data/Supplementary Dataset 6/classifier/omicron/checkpoint-180/',
+model = BertModel.from_pretrained('Supplemetary_Dataset_6/classifier/omicron/checkpoint-180/',
                                   output_hidden_states = True)
 ```
 
